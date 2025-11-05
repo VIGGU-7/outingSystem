@@ -203,7 +203,6 @@ export const verifyEmail = async (req, res) => {
 
     return res.status(200).json({
       message: "Email verified successfully",
-      token: authToken,
     });
   } catch (error) {
     console.error("Error in verify email controller:", error);
