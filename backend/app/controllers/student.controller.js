@@ -210,3 +210,45 @@ export const verifyEmail = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// onboarding the user
+export async function userOnBoard(req, res) {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { name, mobileNumber } = req.body;
+    if (!validateFields({ name, mobileNumber }, res)) return;
+
+    const existingUser = await studentModel.findById(user._id);
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const mobileStr = mobileNumber.toString();
+    if (!/^\d{10}$/.test(mobileStr)) {
+      return res.status(400).json({ message: "Invalid mobile number" });
+    }
+
+    existingUser.mobileNumber = mobileStr;
+    existingUser.Name = name.trim();
+    existingUser.isOnBoarded = true;
+
+    // save changes
+    await existingUser.save();
+
+    return res.status(200).json({
+      message: "Student onboarding successful",
+      user: {
+        name: existingUser.Name,
+        mobileNumber: existingUser.mobileNumber,
+        isOnBoarded: existingUser.isOnBoarded,
+      },
+    });
+  } catch (error) {
+    console.error("Error in user onboarding controller:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
