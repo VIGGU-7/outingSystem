@@ -93,6 +93,7 @@ export const loginStudent = async (req, res) => {
     if (!validateFields({ email, password }, res)) return;
 
     const user = await studentModel.findOne({ email });
+    const userfordata=await studentModel.findOne({ email }).select("-password")
     if (!user) {
       return res.status(400).json({
         message: "No user found associated with email",
@@ -126,7 +127,8 @@ export const loginStudent = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: "Login success"
+      message: "Login success",
+      user:userfordata
     });
   } catch (error) {
     console.error("Error occurred at student login controller:", error);
