@@ -98,3 +98,34 @@ export const loginStudent = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await studentModel.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    if (user.emailVerified) {
+      return res.status(400).json({ message: "Email already verified" });
+    }
+
+    // Generate a new token & expiry
+    const token = crypto.randomBytes(32).toString("hex");
+    user.emailVerificationToken = token;
+    user.emailVerificationExpires = Date.now() + 10 * 60 * 1000; // 10 mins
+    await user.save();
+
+    // Send new verification email
+    await sendEmail("verify", user.email, token);
+
+    return res.status(200).json({
+      message: "Verification email resent successfully. Check your inbox!",
+    });
+  } catch (error) {
+    console.error("Error in resend verification:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
