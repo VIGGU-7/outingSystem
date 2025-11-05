@@ -12,7 +12,7 @@ const loginSchema = z.object({
     .string()
     .min(1, 'Enter your MIS ID or college email')
     .regex(/^(?:\d{9}|\d{9,}@\w+\.iiitp\.ac\.in)$/, 'Invalid MIS or email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 export default function Login() {
