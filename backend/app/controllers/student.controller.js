@@ -2,6 +2,7 @@ import { studentModel } from "../models/student.model.js";
 import bcrypt from "bcryptjs";
 import { genToken } from "../utils/genToken.js";
 import sendEmail from "../utils/mailer.js";
+import crypto from 'crypto'
 function validateFields(data, res) {
   for (const key in data) {
     if (!data[key]?.trim()) {
@@ -38,11 +39,18 @@ export const registerStudent = async (req, res) => {
         message: "Email already exists",
       });
     }
-
+    //as mis and branch and batch has fixed variables like cse.iiitp.ac.in and mis 
+    const studentVariables=email.split("@")
+    const MIS=studentVariables[0]
+    const Branch=studentVariables[1].split(".")[0]
+    const Batch=Number(`${studentVariables[0]}`.slice(2,4))+4 //adding 4 year becomes the batch
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new studentModel({ email, password: hashedPassword });
+    const newUser = new studentModel({ email, password: hashedPassword,MIS,Branch,Batch});
+    const token = crypto.randomBytes(32).toString("hex");
+    newUser.emailVerificationToken = token;
+    newUser.emailVerificationExpires = Date.now() + 10 * 60 * 1000; //10min
     await newUser.save();
-    
+    await sendEmail("verify",email,token)
     return res.status(201).json({
       message: "User created successfully",
     });

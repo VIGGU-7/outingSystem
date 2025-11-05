@@ -18,10 +18,7 @@ const studentSchema = new Schema(
     },
     MIS: {
       type: String,
-      validate: {
-        validator: (value) => /^\d{10}$/.test(value),
-        message: (props) => `${props.value} is invalid MIS (must be 10 digits)`
-      }
+      required:true
     },
     Name: {
       type: String,
