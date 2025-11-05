@@ -73,7 +73,10 @@ function App() {
 function Root() {
   const { authUser } = useauthStore();
   if (authUser) {
-    return <Navigate to="/home" replace />;
+    if(!authUser.isOnBoarded){
+      return <Navigate to="/onboard" replace />;
+    }
+    return <Navigate to="/Generate" replace />;
   } else {
     return <Navigate to="/login" replace />;
   }
