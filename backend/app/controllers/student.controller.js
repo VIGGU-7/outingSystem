@@ -2,7 +2,9 @@ import { studentModel } from "../models/student.model.js";
 import bcrypt from "bcryptjs";
 import { genToken } from "../utils/genToken.js";
 import sendEmail from "../utils/mailer.js";
-import crypto from 'crypto'
+import crypto from "crypto";
+
+
 function validateFields(data, res) {
   for (const key in data) {
     if (!data[key]?.trim()) {
@@ -13,6 +15,7 @@ function validateFields(data, res) {
   return true;
 }
 
+//register student
 export const registerStudent = async (req, res) => {
   try {
     const email = req.body.email?.toLowerCase().trim();
@@ -21,38 +24,59 @@ export const registerStudent = async (req, res) => {
 
     if (!validateFields({ email, password }, res)) return;
 
+    // Check valid college domain
     if (!regex.test(email)) {
       return res.status(400).json({
         message: "Use your college email (example@iiitp.ac.in)",
       });
     }
 
+    // Check password length
     if (password.length < 8) {
       return res.status(400).json({
         message: "Password length must be at least 8 characters",
       });
     }
 
+    // Check if email already exists
     const emailExists = await studentModel.findOne({ email });
     if (emailExists) {
       return res.status(400).json({
         message: "Email already exists",
       });
     }
-    //as mis and branch and batch has fixed variables like cse.iiitp.ac.in and mis 
-    const studentVariables=email.split("@")
-    const MIS=studentVariables[0]
-    const Branch=studentVariables[1].split(".")[0]
-    const Batch=Number(`${studentVariables[0]}`.slice(2,4))+4 //adding 4 year becomes the batch
+
+    // Extract MIS, Branch, and Batch info from email
+    const studentVariables = email.split("@");
+    const MIS = studentVariables[0];
+    const domainParts = studentVariables[1].split(".");
+    const Branch = domainParts.length > 1 ? domainParts[0] : "unknown";
+    const Batch = Number(`${studentVariables[0]}`.slice(2, 4)) + 4; // add 4 years
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new studentModel({ email, password: hashedPassword,MIS,Branch,Batch});
+
+    // Create new user record
+    const newUser = new studentModel({
+      email,
+      password: hashedPassword,
+      MIS,
+      Branch,
+      Batch,
+    });
+
+    // Generate secure verification token (10 min expiry)
     const token = crypto.randomBytes(32).toString("hex");
     newUser.emailVerificationToken = token;
-    newUser.emailVerificationExpires = Date.now() + 10 * 60 * 1000; //10min
+    newUser.emailVerificationExpires = Date.now() + 10 * 60 * 1000;
+
     await newUser.save();
-    await sendEmail("verify",email,token)
+
+    // Send verification email
+    await sendEmail("verify", email, token);
+
     return res.status(201).json({
-      message: "User created successfully",
+      message: "User created successfully. Please verify your email.",
     });
   } catch (error) {
     console.error("Error occurred at student signup controller:", error);
@@ -60,6 +84,7 @@ export const registerStudent = async (req, res) => {
   }
 };
 
+//student login
 export const loginStudent = async (req, res) => {
   try {
     const email = req.body.email?.toLowerCase().trim();
@@ -68,35 +93,40 @@ export const loginStudent = async (req, res) => {
     if (!validateFields({ email, password }, res)) return;
 
     const user = await studentModel.findOne({ email });
-
     if (!user) {
       return res.status(400).json({
         message: "No user found associated with email",
       });
     }
-    const isMatch = await bcrypt.compare(password, user.password);
-    if(!user.emailVerified){
+
+    // Check email verification
+    if (!user.emailVerified) {
       return res.status(400).json({
-        message:"Email is not verified"
-      })
+        message: "Please verify your email before logging in",
+      });
     }
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({
         message: "Invalid email or password",
       });
     }
 
+    // Generate JWT
+    const jwtToken = genToken(user._id);
 
-    const token=genToken(user._id)
-    res.cookie("token",token,{
-        secure:true,
-        maxAge:7*24*60*60*1000,
-        httpOnly:true,
-        sameSite:"strict"
-    })
+    // Set cookie (7 days)
+    res.cookie("token", jwtToken, {
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      sameSite: "strict",
+    });
+
     return res.status(200).json({
-      message: "Login success",
-      token,
+      message: "Login success"
     });
   } catch (error) {
     console.error("Error occurred at student login controller:", error);
@@ -104,9 +134,11 @@ export const loginStudent = async (req, res) => {
   }
 };
 
+//resend verify email
 export const resendVerificationEmail = async (req, res) => {
   try {
     const { email } = req.body;
+    if (!validateFields({ email }, res)) return;
 
     const user = await studentModel.findOne({ email });
     if (!user) {
@@ -117,10 +149,19 @@ export const resendVerificationEmail = async (req, res) => {
       return res.status(400).json({ message: "Email already verified" });
     }
 
+    // Prevent spamming resend (limit once every 2 min)
+    const lastSentAgo =
+      Date.now() - (user.emailVerificationExpires - 10 * 60 * 1000);
+    if (lastSentAgo < 2 * 60 * 1000) {
+      return res
+        .status(429)
+        .json({ message: "Please wait 2 minutes before requesting again" });
+    }
+
     // Generate a new token & expiry
     const token = crypto.randomBytes(32).toString("hex");
     user.emailVerificationToken = token;
-    user.emailVerificationExpires = Date.now() + 10 * 60 * 1000; // 10 mins
+    user.emailVerificationExpires = Date.now() + 10 * 60 * 1000;
     await user.save();
 
     // Send new verification email
@@ -131,6 +172,48 @@ export const resendVerificationEmail = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in resend verification:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//verify email
+export const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Find user by token and ensure token is not expired
+    const user = await studentModel.findOne({
+      emailVerificationToken: token,
+      emailVerificationExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired verification token" });
+    }
+
+    // Mark email as verified
+    user.emailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+
+    // Auto-login user
+    const authToken = genToken(user._id);
+    res.cookie("token", authToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      message: "Email verified successfully",
+      token: authToken,
+    });
+  } catch (error) {
+    console.error("Error in verify email controller:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
