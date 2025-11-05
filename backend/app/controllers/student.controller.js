@@ -248,7 +248,24 @@ export async function userOnBoard(req, res) {
       },
     });
   } catch (error) {
-    console.error("Error in user onboarding controller:", error);
+    console.error("Error in student onboarding controller:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 }
+export const logout = async (req, res) => {
+  try {
+    res.cookie("token", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      expires: new Date(0), 
+    });
+
+    return res.status(200).json({
+      message: "Logout successful",
+    });
+  } catch (error) {
+    console.error("Error in student logout controller:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
