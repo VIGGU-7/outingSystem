@@ -11,9 +11,7 @@ const studentSchema = z.object({
   mobileNumber: z
     .string()
     .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number"),
-  hostel: z.enum(["bh1", "bh2", "gh"], {
-    errorMap: () => ({ message: "Select a valid hostel" }),
-  }),
+  hostel: z.enum(["bh1", "bh2", "gh"] as const),
   roomNo: z.string().min(1, "Enter your room number"),
 });
 
@@ -30,7 +28,7 @@ export default function Onboard() {
     resolver: zodResolver(studentSchema),
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     try {
       setisLoading(true);
       const response = await apiInstance.post("/onboard", data);
@@ -38,8 +36,8 @@ export default function Onboard() {
       reset();
       if (authUser) authUser.isOnBoarded = true;
       navigate("/");
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Something went wrong");
+    } catch (error: any) {
+      toast.error((error as any)?.response?.data?.message || "Something went wrong");
     } finally {
       setisLoading(false);
     }

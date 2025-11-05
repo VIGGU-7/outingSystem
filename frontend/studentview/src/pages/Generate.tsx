@@ -3,16 +3,32 @@ import { useForm } from "react-hook-form";
 import { QRCodeCanvas } from "qrcode.react";
 import toast from "react-hot-toast";
 import { apiInstance } from "../utils";
-import useAuthStore from "../utils/store";
-import { User } from "lucide-react"; // ✅ icon for profile
+
+type OutingType = "General" | "Special";
+
+interface Outing {
+  _id?: string;
+  outingType: OutingType;
+  purpose: string;
+  place: string;
+  parentContact?: string;
+  status?: "Pending" | "Approved" | "Rejected";
+  createdAt: string;
+}
+
+interface FormInputs {
+  outingType: OutingType;
+  purpose: string;
+  place: string;
+  parentContact?: string;
+}
 
 export default function Generate() {
-  const { authUser } = useAuthStore();
-  const [qrData, setQrData] = useState("");
-  const [history, setHistory] = useState([]);
-  const [zoomedQR, setZoomedQR] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [fetchingHistory, setFetchingHistory] = useState(true);
+  const [qrData, setQrData] = useState<string>("");
+  const [history, setHistory] = useState<Outing[]>([]);
+  const [zoomedQR, setZoomedQR] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [fetchingHistory, setFetchingHistory] = useState<boolean>(true);
 
   const {
     register,
@@ -20,18 +36,18 @@ export default function Generate() {
     watch,
     reset,
     formState: { errors },
-  } = useForm();
+  } = useForm<FormInputs>();
 
   const outingType = watch("outingType");
 
-  // ✅ Fetch outing history from DB
+  // ✅ Fetch outing history
   useEffect(() => {
     let isMounted = true;
     const fetchHistory = async () => {
       try {
-        const res = await apiInstance.get("/outing");
+        const res = await apiInstance.get<{ outings: Outing[] }>("/outing");
         if (isMounted) setHistory(res.data?.outings || []);
-      } catch (err) {
+      } catch (err: any) {
         toast.error(err?.response?.data?.message || "Failed to fetch history");
       } finally {
         if (isMounted) setFetchingHistory(false);
@@ -44,10 +60,10 @@ export default function Generate() {
   }, []);
 
   // ✅ Submit form → backend generates outing → frontend displays QR
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: FormInputs) => {
     setLoading(true);
     try {
-      const payload =
+      const payload: Partial<Outing> =
         data.outingType === "General"
           ? {
               outingType: data.outingType,
@@ -61,16 +77,19 @@ export default function Generate() {
               parentContact: data.parentContact,
             };
 
-      const res = await apiInstance.post("/outing/add", payload);
+      const res = await apiInstance.post<{ outing: Outing }>(
+        "/outing/add",
+        payload
+      );
 
       if (res.status === 201) {
-        const createdOuting = res.data.outing || res.data;
+        const createdOuting = res.data.outing;
         setQrData(JSON.stringify(createdOuting, null, 2));
         setHistory((prev) => [createdOuting, ...prev]);
         toast.success("Outing created successfully!");
         reset();
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error?.response?.data?.message || "Something went wrong!");
     } finally {
       setLoading(false);
@@ -84,7 +103,20 @@ export default function Generate() {
         onClick={() => (window.location.href = "/profile")}
         className="absolute top-4 left-4 flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow hover:bg-gray-50 transition"
       >
-        <User className="w-5 h-5 text-gray-700" />
+        {/* inline profile SVG (replaces missing User component) */}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5 text-gray-700"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
         <span className="font-medium text-gray-700">Profile</span>
       </button>
 

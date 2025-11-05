@@ -1,6 +1,7 @@
-import { useEffect, useState, ChangeEvent, FormEvent } from "react";
-import { apiInstance } from "../utils";
+import { useEffect, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import toast from "react-hot-toast";
+import { apiInstance } from "../utils";
 import useAuthStore from "../utils/store";
 import { ArrowLeft, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +23,8 @@ interface ApiResponse {
 }
 
 export default function Profile() {
-  const { authUser, setAuthUser } = useAuthStore();
+  // store exposes setUser — use that name
+  const { authUser, setUser } = useAuthStore();
   const [userData, setUserData] = useState<UserData>({
     Name: "",
     mobileNumber: "",
@@ -70,42 +72,40 @@ export default function Profile() {
   };
 
   // ✅ Save updated profile
-// ✅ Save updated profile
-const handleSave = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleSave = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  if (!hasChanges()) {
-    toast.error("No changes detected!");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const payload = {
-      Name: userData.Name.trim(),
-      mobileNumber: userData.mobileNumber.trim(),
-      Hostel: userData.Hostel.trim(),
-      roomNo: userData.roomNo.trim(),
-    };
-
-    const res = await apiInstance.post<ApiResponse>("/edit", payload);
-
-    // ✅ Handle API status explicitly
-    if (res.status >= 200 && res.status < 300) {
-      toast.success("Profile updated successfully!");
-      setAuthUser(res.data.user || { ...authUser, ...payload });
-      setOriginalData({ ...userData }); // Update baseline
-    } else {
-      throw new Error(res?.data?.message || "Unexpected response from server");
+    if (!hasChanges()) {
+      toast.error("No changes detected!");
+      return;
     }
-  } catch (err: any) {
-    console.error("Update error:", err);
-    toast.error(err?.response?.data?.message || "Update failed!");
-  } finally {
-    setLoading(false);
-  }
-};
 
+    setLoading(true);
+    try {
+      const payload = {
+        Name: userData.Name.trim(),
+        mobileNumber: userData.mobileNumber.trim(),
+        Hostel: userData.Hostel.trim(),
+        roomNo: userData.roomNo.trim(),
+      };
+
+      const res = await apiInstance.post<ApiResponse>("/edit", payload);
+
+      // ✅ Handle API status explicitly
+      if (res.status >= 200 && res.status < 300) {
+        toast.success("Profile updated successfully!");
+        setUser(res.data.user || { ...authUser, ...payload });
+        setOriginalData({ ...userData }); // Update baseline
+      } else {
+        throw new Error(res?.data?.message || "Unexpected response from server");
+      }
+    } catch (err: any) {
+      console.error("Update error:", err);
+      toast.error(err?.response?.data?.message || "Update failed!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
