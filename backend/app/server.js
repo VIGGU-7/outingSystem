@@ -1,6 +1,7 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import 'dotenv/config'
+import cors from 'cors'
 import { connectDB } from "./utils/connectDB.js"
 const app=express()
 const PORT=process.env.PORT
@@ -10,7 +11,10 @@ app.use(express.urlencoded({
     limit: "1mb",
 }))
 app.use(cookieParser())
-
+app.use(cors({
+origin: 'http://localhost:5173',
+credentials:true
+}))
 
 //routes
 import studentRoutes from './routes/student.routes.js'
