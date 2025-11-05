@@ -211,6 +211,56 @@ export const verifyEmail = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+//edit user trend
+
+export async function editUser(req, res) {
+  try {
+    const { Name, mobileNumber, Hostel, roomNo } = req.body;
+
+    // Ensure the user is authenticated
+    if (!req.user?._id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Build dynamic update object
+    const updates = {};
+    if (Name) updates.Name = Name;
+    if (Hostel) updates.Hostel = Hostel;
+    if (roomNo) updates.roomNo = roomNo;
+
+    if (mobileNumber) {
+      const phoneRegex = /^[6-9]\d{9}$/;
+      if (!phoneRegex.test(mobileNumber)) {
+        return res.status(400).json({ message: "Invalid mobile number format" });
+      }
+      updates.mobileNumber = mobileNumber;
+    }
+
+    // If no fields were provided
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: "No fields to update" });
+    }
+
+    // Update user document
+    const updatedUser = await studentModel.findByIdAndUpdate(
+      req.user._id,
+      { $set: updates },
+      { new: true }
+    ).select("-password"); // exclude sensitive fields
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error in edit user controller:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
 
 // onboarding the user
 export async function userOnBoard(req, res) {
