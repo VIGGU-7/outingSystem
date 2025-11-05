@@ -3,12 +3,12 @@ import 'dotenv/config'
 
 async function sendEmail(type, email, token) {
   const transport = nodemailer.createTransport(
-   { host: "smtp-relay.brevo.com",
-    port: 587,
+   { host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
     secure: false,
     auth: {
-     user: "5029cb002@smtp-brevo.com",
-     pass: "ICNOU7PdX6MQv912",
+     user: process.env.EMAIL_USER,
+     pass: process.env.EMAIL_PASS,
    },
   }
 );
