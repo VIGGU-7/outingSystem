@@ -18,6 +18,8 @@ credentials:true
 
 //routes
 import studentRoutes from './routes/student.routes.js'
+import outingRoutes from './routes/outing.routes.js'
+app.use("/api/v1/student/outing",outingRoutes)
 app.use("/api/v1/student",studentRoutes)
 
 
