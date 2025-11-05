@@ -218,8 +218,8 @@ export async function userOnBoard(req, res) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const { name, mobileNumber } = req.body;
-    if (!validateFields({ name, mobileNumber }, res)) return;
+    const { name, mobileNumber,hostel,roomNo } = req.body;
+    if (!validateFields({ name, mobileNumber,hostel,roomNo }, res)) return;
 
     const existingUser = await studentModel.findById(user._id);
     if (!existingUser) {
@@ -232,6 +232,8 @@ export async function userOnBoard(req, res) {
     }
 
     existingUser.mobileNumber = mobileStr;
+    existingUser.Hostel = hostel;
+    existingUser.roomNo=roomNo;
     existingUser.Name = name.trim();
     existingUser.isOnBoarded = true;
 

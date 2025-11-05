@@ -36,6 +36,9 @@ const studentSchema = new Schema(
     Hostel:{
       type:String,
     },
+    roomNo:{
+      type:String,
+    },
     mobileNumber: {
       type: String,
       validate: {
