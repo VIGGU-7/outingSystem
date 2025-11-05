@@ -74,13 +74,18 @@ export const loginStudent = async (req, res) => {
         message: "No user found associated with email",
       });
     }
-
     const isMatch = await bcrypt.compare(password, user.password);
+    if(!user.emailVerified){
+      return res.status(400).json({
+        message:"Email is not verified"
+      })
+    }
     if (!isMatch) {
       return res.status(400).json({
         message: "Invalid email or password",
       });
     }
+
 
     const token=genToken(user._id)
     res.cookie("token",token,{
