@@ -10,6 +10,7 @@ import Generate from "./pages/Generate";
 import { LoaderCircle } from 'lucide-react';
 import PrivateRoute from "./utils/Privateroute";
 import PublicRoute from "./utils/Publicroute";
+import Verify from "./pages/Verify";
 function App() {
   const { setisLoading,isLoading,setUser } = useauthStore();
 
@@ -62,6 +63,8 @@ function App() {
         <PrivateRoute>
           <Generate/>
         </PrivateRoute>}/>
+         <Route path="/verify" element={
+          <Verify/>}/>
 
     </Routes>
   );
