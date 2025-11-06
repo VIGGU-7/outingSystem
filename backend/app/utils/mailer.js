@@ -41,8 +41,8 @@ async function sendEmail(type, email, token) {
                   Verify Email
                 </a>
               </td></tr>
-              <tr><td style="padding-top:20px;"><p style="color:#888; font-size:14px;">
-                If you didn’t create an account, you can safely ignore this email.</p></td></tr>
+              <tr><td style="padding-top:20px;"><p style="color:#888; font-size:14px;"> 
+                If you are unable to open the link open the link in chrome ${process.env.emailBase}/verify?token=${token}If you didn’t create an account, you can safely ignore this email.</p></td></tr>
             </table>
           </td>
         </tr>
