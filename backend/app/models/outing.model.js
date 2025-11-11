@@ -59,7 +59,7 @@ const outingSchema = new mongoose.Schema(
           return !v || /^[6-9]\d{9}$/.test(v);
         },
         message: props => `${props.value} is not a valid phone number!`
-      }
+      } 
     },
     status: {
       type: String,

@@ -23,7 +23,9 @@ app.use("/api/v1/student/outing",outingRoutes)
 app.use("/api/v1/student",studentRoutes)
 
 
-
+//guard routes
+import guardRoutes from './routes/guard.routes.js'
+app.use("/api/v1/guard",guardRoutes)
 
 
 
