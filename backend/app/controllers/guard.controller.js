@@ -206,14 +206,63 @@ export const completeOuting=async(req,res)=>{
             }
         )
     }
+}   
+
+export const getOutingDetailsSortByDate = async (req, res) => {
+  try {
+    let { startDate, endDate } = req.query;
+
+    startDate = startDate ? new Date(startDate) : null;
+    endDate = endDate ? new Date(endDate) : null;
+
+    if (!startDate) {
+      const data = await outingModel.find().sort({ outTime: -1 });
+      return res.status(200).json({
+        data,
+        message: "Outing data fetched successfully",
+      });
+    }
+
+    if (!endDate) {
+      endDate = new Date();
+      endDate.setHours(23, 59, 59, 999);
+    }
+
+    startDate.setHours(0, 0, 0, 0);
+
+    const data = await outingModel.find({
+      outTime: { $gte: startDate, $lte: endDate },
+    }).sort({ outTime: -1 });
+
+    return res.status(200).json({
+      data,
+      message: "Outing data fetched successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+export const getOutingDetailsByMis=async(req,res)=>{
+    try {
+        const {MIS}=req.params;
+        if(!MIS){
+            return res.status(400).json({
+                message:"MIS is required"
+            })
+        }
+        const data=await outingModel.find({MIS}).sort({outTime:-1});
+        return res.status(200).json({
+            data,
+            message:"Outing data fetched successfully"
+        })
+    } catch (error) {
+        console.log("An error occured at get outing details by MIS controller")
+        return res.status(500).json(        {
+                message:"Internal server error"
+            }
+        )
+    }   
 }
-//to be done well i'm sleepy
-// export const getOutingDetailsSortByDate=async(req,res)=>{
-//     try {
-//           const guard=req.guard;
-//           const data=await outingModel.find({outTime:{$gt:Date.now()}})
-        
-//     } catch (error) {
-        
-//     }
-// }
