@@ -266,3 +266,37 @@ export const getOutingDetailsByMis=async(req,res)=>{
         )
     }   
 }
+export const checkAuthenticated=async(req,res)=>{
+    try {
+        const guard=req.guard;          
+        return res.status(200).json({
+            guard
+        })  
+    } catch (error) {
+        console.log("An error occured at check authenticated guard controller")
+        return res.status(500).json(    {
+                message:"Internal server error"
+            }
+        )
+    }  
+}
+export const logout=async(req,res)=>{
+    try {
+        res.cookie("token","",{
+            maxAge:0,
+            httpOnly:true,
+            secure: process.env.NODE_ENV=="production",
+            sameSite: "strict",
+        })
+        return res.status(200).json({
+            message:"Logout success"
+        })
+    }       
+    catch (error) {
+        console.log("An error occured at guard logout controller")
+        return res.status(500).json(    {
+                message:"Internal server error"
+            }
+        )
+    }
+}
