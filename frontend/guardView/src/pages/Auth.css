@@ -1,0 +1,4 @@
+.dotted-bg {
+  background-image: radial-gradient(#888 1px, transparent 1px);
+  background-size: 20px 20px;
+}

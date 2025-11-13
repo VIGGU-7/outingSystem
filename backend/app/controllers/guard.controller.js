@@ -11,8 +11,8 @@ function validateFields(data,res){
             })
             return false;
         }
-        return true;
     }
+            return true;
 }
 export const guardRegister = async (req, res) => {
   try {
@@ -75,7 +75,7 @@ export const guardLogin=async(req,res)=>{
                 message:"The guard email isn't registered"
             })
         } 
-        const isMatch=bcrypt.compare(password,user.password);
+        const isMatch=await bcrypt.compare(password,user.password);
         if(!isMatch){
             return res.status(400).json({
                 message:"Wrong password"
