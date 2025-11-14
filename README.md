@@ -116,10 +116,7 @@ Guard
 
 ---
 
-## Recommended images to add (manifest)
-See `docs/IMAGES.md` for names and descriptions. Add your screenshots and the demo video thumbnail to `docs/images/`, then the images will render in this README.
 
----
 
 ## Contributing
 - Create a branch per feature.
