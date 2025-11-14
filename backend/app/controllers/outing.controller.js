@@ -6,12 +6,10 @@ export const addOuting = async (req, res) => {
     const user = req.user;
     const { outingType, purpose, place, parentContact, outTime } = req.body;
 
-    // Basic validation
     if (!outingType || !purpose || !place) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Validate date (if provided)
     let outingDate = new Date();
     if (outTime) {
       outingDate = new Date(outTime);
@@ -20,13 +18,11 @@ export const addOuting = async (req, res) => {
       }
     }
 
-    // Check if student exists
     const studentExists = await studentModel.findOne({ MIS: user.MIS });
     if (!studentExists) {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    // Validate outing type
     const formattedOutingType =
       outingType.charAt(0).toUpperCase() + outingType.slice(1).toLowerCase();
 
@@ -36,25 +32,25 @@ export const addOuting = async (req, res) => {
       });
     }
 
-    // Check if there's already a pending outing for that day
     const startOfDay = new Date(outingDate);
     startOfDay.setHours(0, 0, 0, 0);
+
     const endOfDay = new Date(outingDate);
     endOfDay.setHours(23, 59, 59, 999);
 
+    // 🔥 FIXED: Correctly check pending or approved
     const existingPending = await outingModel.findOne({
       MIS: user.MIS,
       outTime: { $gte: startOfDay, $lte: endOfDay },
-      status: "Pending",
+      status: { $in: ["Pending", "Approved"] },
     });
 
     if (existingPending) {
       return res.status(400).json({
-        message: "You already have a pending outing request for today.",
+        message: "You already have a pending or approved outing request for today.",
       });
     }
 
-    // Create outing
     const newOuting = new outingModel({
       studentName: user.Name,
       MIS: user.MIS,

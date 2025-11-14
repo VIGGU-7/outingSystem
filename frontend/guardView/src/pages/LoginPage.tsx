@@ -1,4 +1,5 @@
-import React, { FormEvent } from 'react'
+import React from 'react'
+import type { FormEvent } from 'react'
 import { AlertCircleIcon,X } from "lucide-react"
 import {
   Alert,
@@ -17,8 +18,12 @@ import {
 } from "@/components/ui/alert-dialog"
 import { motion, AnimatePresence } from "framer-motion"
 import { apiInstance } from '@/lib/apiInstance'
+import { useAuthStore } from '@/store/authStore'
+import { useNavigate } from 'react-router-dom'
 
 function LoginPage() {
+    const navigate=useNavigate()
+    const {setIsLoading,setUserData}=useAuthStore()
   const [data, setData] = React.useState({
     email: "",
     password: ""
@@ -43,13 +48,15 @@ function LoginPage() {
       return
     }
     try {
+        setIsLoading(true)
         const response=await apiInstance.post('/login',data)
-        console.log(response.data);
-    } catch (error) {
         
-    }
-    finally {
-            setError("")
+        setUserData(response.data.user)
+        navigate('/')
+    } catch (error: any) {
+       setError(error?.response?.data?.message || "Login failed. Please try again.")
+    }finally{
+        setIsLoading(false)
     }
 
   }

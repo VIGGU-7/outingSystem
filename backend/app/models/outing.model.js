@@ -67,11 +67,18 @@ const outingSchema = new mongoose.Schema(
       default: "Pending",
       required: true,
     },
-    checkedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Guard",
+    approvedBy: {
+       type: String,
       default: null,
-    }
+    },
+    markedCompletedBy: {
+      type: String,
+      default: null,
+    },
+    rejectedBy: {
+       type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );
