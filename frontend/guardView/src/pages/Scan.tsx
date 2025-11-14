@@ -23,7 +23,7 @@ export default function ScanPage() {
   const scanningRef = useRef(false);
   const qrRef = useRef<Html5Qrcode | null>(null);
 
-  // --- START SCANNER ---
+  // START SCANNER
   useEffect(() => {
     let isMounted = true;
 
@@ -33,10 +33,10 @@ export default function ScanPage() {
 
         if (!isMounted) return;
 
-        const html5QrCode = new Html5Qrcode("qr-reader");
-        qrRef.current = html5QrCode;
+        const scanner = new Html5Qrcode("qr-reader");
+        qrRef.current = scanner;
 
-        html5QrCode
+        scanner
           .start(
             { facingMode: "environment" },
             { fps: 15, qrbox: { width: 250, height: 250 } },
@@ -50,6 +50,10 @@ export default function ScanPage() {
                   scanningRef.current = false;
                 }, 2000);
               }
+            },
+            (errorMessage) => {
+              // ignore frequent decode errors
+              // console.log("Scan error:", errorMessage);
             }
           )
           .catch((err) => {
@@ -72,7 +76,7 @@ export default function ScanPage() {
     };
   }, []);
 
-  // --- LOOKUP BY MIS (manual input) ---
+  // MANUAL LOOKUP BY MIS
   const lookupByMIS = async (mis: string) => {
     if (!/^\d{9}$/.test(mis)) {
       return toast.error("MIS must be exactly 9 digits");
@@ -93,9 +97,8 @@ export default function ScanPage() {
     }
   };
 
-  // --- LOOKUP BY OUTING ID (QR scan) ---
+  // LOOKUP BY OUTING ID (FROM QR)
   const lookupOutingById = async (id: string) => {
-    // Validate MongoDB ObjectId (24 hex chars)
     if (!/^[a-fA-F0-9]{24}$/.test(id)) {
       return toast.error("Invalid QR code");
     }
@@ -105,7 +108,6 @@ export default function ScanPage() {
       setOuting(null);
 
       const res = await apiInstance.get(`/getoutings/id/${id}`);
-      
       setOuting(res.data.data);
 
       toast.success("QR matched");
@@ -116,7 +118,7 @@ export default function ScanPage() {
     }
   };
 
-  // --- UPDATE STATUS ---
+  // UPDATE OUTING STATUS
   const updateStatus = async (
     status: "Approved" | "Rejected" | "Completed"
   ) => {
@@ -142,7 +144,7 @@ export default function ScanPage() {
   return (
     <PageShell title="Scan QR" subtitle="Scan QR (ID) or enter MIS manually">
       <div className="grid gap-6 lg:grid-cols-[2fr,1.5fr]">
-
+        
         {/* CAMERA SCANNER */}
         <Card>
           <CardHeader>
@@ -151,6 +153,7 @@ export default function ScanPage() {
               Camera Scan (QR = Outing ID)
             </CardTitle>
           </CardHeader>
+
           <CardContent className="space-y-3">
             <div
               id="qr-reader"
@@ -162,10 +165,10 @@ export default function ScanPage() {
           </CardContent>
         </Card>
 
-        {/* RIGHT SECTION */}
+        {/* RIGHT PANEL */}
         <div className="space-y-4">
 
-          {/* MANUAL LOOKUP */}
+          {/* MANUAL MIS LOOKUP */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -182,6 +185,7 @@ export default function ScanPage() {
                   placeholder="Enter 9-digit MIS"
                   className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none"
                 />
+
                 <button
                   onClick={() => lookupByMIS(manualCode)}
                   disabled={!/^\d{9}$/.test(manualCode) || isLookingUp}
@@ -199,10 +203,11 @@ export default function ScanPage() {
             <CardHeader>
               <CardTitle>Outing Details</CardTitle>
             </CardHeader>
+
             <CardContent>
               {!outing && !isLookingUp && (
                 <p className="text-sm text-muted-foreground">
-                  Scan a QR (ID) or enter MIS to view outing details.
+                  Scan a QR or enter MIS to view outing details.
                 </p>
               )}
 
@@ -234,7 +239,6 @@ export default function ScanPage() {
                     {outing.status}
                   </p>
 
-                  {/* Action Buttons */}
                   <div className="flex flex-wrap gap-2 pt-2">
                     {outing.status === "Pending" && (
                       <>
@@ -244,6 +248,7 @@ export default function ScanPage() {
                         >
                           Approve
                         </button>
+
                         <button
                           onClick={() => updateStatus("Rejected")}
                           className="bg-red-600/10 text-red-700 px-3 py-1.5 rounded-md text-xs"
