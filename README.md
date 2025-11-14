@@ -20,29 +20,15 @@ Badges
 ## Screenshots / Images
 
 ![GuardLogin](./docs/images/image-1.png)
-![Student Generate](./docs/images/student-generate.png)
-![Guard Dashboard](./docs/images/guard-dashboard.png)
-
+![Student Generate](./docs/images/image-7.png)
+![Guard Dashboard](./docs/images/image-2.png)
+![Guard QR SCAN](./docs/images/image-3.png)
+![Manual MIS Lookup](./docs/images/image-4.png)
+![Pending Outings](./docs/images/image-5.png)
+![Outing History](./docs/images/image-6.png)
+![StudentOnboarding](./docs/images/image-9.png)
 ---
 
-## Quick screenshot links (use these paths to embed/use images or CI)
-You can copy these relative paths into other docs, scripts, or use them directly in README.
-
-```
-SCREENSHOT_GUARD_LOGIN=./docs/images/image-1.png
-SCREENSHOT_STUDENT_GENERATE=./docs/images/student-generate.png
-SCREENSHOT_STUDENT_PROFILE=./docs/images/student-profile.png
-SCREENSHOT_GUARD_DASHBOARD=./docs/images/guard-dashboard.png
-SCREENSHOT_GUARD_SCAN=./docs/images/guard-scan.png
-SCREENSHOT_OUTING_HISTORY=./docs/images/outing-history.png
-SCREENSHOT_VIDEO_THUMBNAIL=./docs/images/video-thumbnail.png
-
-DEMO_YOUTUBE_URL=https://youtu.be/NLlE6XnnyJc
-```
-
-
-
----
 
 ## Features
 - Student: signup, login, onboard, create outing, generate QR, view history.
