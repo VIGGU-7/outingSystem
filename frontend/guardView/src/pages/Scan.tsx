@@ -51,9 +51,8 @@ export default function ScanPage() {
                 }, 2000);
               }
             },
-            (errorMessage) => {
-              // ignore frequent decode errors
-              // console.log("Scan error:", errorMessage);
+            () => {
+              // Ignore scanning noise errors
             }
           )
           .catch((err) => {

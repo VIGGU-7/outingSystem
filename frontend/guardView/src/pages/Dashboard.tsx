@@ -29,69 +29,66 @@ export default function Dashboard() {
 
   const toggleSidebar = () => setOpen((prev) => !prev);
 
- useEffect(() => {
-  const getStats = async () => {
-    try {
-      setIsLoading(true);
-      const response = await apiInstance.get("/stats");
-      console.log(response.data);
-      setStats({
-        totalToday: response.data.data.totalOutings,
-        approved: response.data.data.approvedOutings,
-        rejected: response.data.data.rejectedOutings,
-        pending: response.data.data.pendingOutings,
-        completed: response.data.data.completedOutings,
-      });
+  useEffect(() => {
+    const getStats = async () => {
+      try {
+        setIsLoading(true);
+        const response = await apiInstance.get("/stats");
 
-    } catch (err) {
-      toast.error("Failed to load statistics");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        setStats({
+          totalToday: response.data.data.totalOutings,
+          approved: response.data.data.approvedOutings,
+          rejected: response.data.data.rejectedOutings,
+          pending: response.data.data.pendingOutings,
+          completed: response.data.data.completedOutings,
+        });
+      } catch (err) {
+        toast.error("Failed to load statistics");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  getStats();
-}, []);
+    getStats();
+  }, []);
 
-
- const statCards = [
-  {
-    title: "Total Today",
-    value: stats.totalToday,
-    icon: Package,
-    color: "text-primary",
-    bg: "bg-primary/10",
-  },
-  {
-    title: "Pending",
-    value: stats.pending,
-    icon: Clock,
-    color: "text-yellow-500",
-    bg: "bg-yellow-500/10",
-  },
-  {
-    title: "Approved",
-    value: stats.approved,
-    icon: CheckCircle,
-    color: "text-green-500",
-    bg: "bg-green-500/10",
-  },
-  {
-    title: "Rejected",
-    value: stats.rejected,
-    icon: XCircle,
-    color: "text-red-500",
-    bg: "bg-red-500/10",
-  },
-  {
-    title: "Completed",
-    value: stats.completed,
-    icon: CheckCircle,
-    color: "text-blue-500",
-    bg: "bg-blue-500/10",
-  },
-];
-
+  const statCards = [
+    {
+      title: "Total Today",
+      value: stats.totalToday,
+      icon: Package,
+      color: "text-primary",
+      bg: "bg-primary/10",
+    },
+    {
+      title: "Pending",
+      value: stats.pending,
+      icon: Clock,
+      color: "text-yellow-500",
+      bg: "bg-yellow-500/10",
+    },
+    {
+      title: "Approved",
+      value: stats.approved,
+      icon: CheckCircle,
+      color: "text-green-500",
+      bg: "bg-green-500/10",
+    },
+    {
+      title: "Rejected",
+      value: stats.rejected,
+      icon: XCircle,
+      color: "text-red-500",
+      bg: "bg-red-500/10",
+    },
+    {
+      title: "Completed",
+      value: stats.completed,
+      icon: CheckCircle,
+      color: "text-blue-500",
+      bg: "bg-blue-500/10",
+    },
+  ];
 
   return (
     <div className="flex">
@@ -132,9 +129,12 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
+
             <CardContent className="grid gap-4 md:grid-cols-3">
-              <a
-                href="/scan"
+
+              {/* Scan QR - use Link */}
+              <Link
+                to="/scan"
                 className="flex items-center gap-3 rounded-lg border p-4 hover:bg-primary/5 hover:border-primary transition"
               >
                 <Clock className="h-5 w-5 text-primary" />
@@ -144,10 +144,11 @@ export default function Dashboard() {
                     Verify student outing
                   </p>
                 </div>
-              </a>
+              </Link>
 
-              <a
-                href="/pending"
+              {/* Pending */}
+              <Link
+                to="/pending"
                 className="flex items-center gap-3 rounded-lg border p-4 hover:bg-yellow-500/5 hover:border-yellow-500"
               >
                 <Package className="h-5 w-5 text-yellow-500" />
@@ -157,8 +158,9 @@ export default function Dashboard() {
                     {stats.pending} waiting
                   </p>
                 </div>
-              </a>
+              </Link>
 
+              {/* History */}
               <Link
                 to="/history"
                 className="flex items-center gap-3 rounded-lg border p-4 hover:bg-accent/5 hover:border-accent"

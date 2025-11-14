@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import PageShell from "../components/Dashboard/PageShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { toast } from "sonner";
 import { apiInstance } from "@/lib/apiInstance";
 
 interface Outing {
-    _id: string;
+  _id: string;
   studentName: string;
   rollNo: string;
   purpose: string;
@@ -25,10 +24,9 @@ export default function PendingPage() {
   const fetchPending = async () => {
     try {
       setIsLoading(true);
-      const res = await apiInstance.get("getoutings?status=Pending");
-        const data = res.data.data;
+      const res = await apiInstance.get("/getoutings?status=Pending");
+      const data = res.data.data;
       setOutings(data);
-      console.log(data)
     } catch {
       toast.error("Failed to load pending outings");
     } finally {
@@ -42,19 +40,16 @@ export default function PendingPage() {
 
   const updateStatus = async (_id: string, status: "approved" | "rejected") => {
     try {
-    
       setActionId(_id);
-      console.log(_id)
-      if(status==="approved"){
-      const res = await apiInstance.post('/approve',{
-        data:{_id}
-      })
-    }if(status==="rejected"){
-        const res = await apiInstance.post('/reject',{
-        data:{_id}
-        })
-        }
+
+      const endpoint =
+        status === "approved" ? "/approve" : "/reject";
+
+      await apiInstance.post(endpoint, { data: { _id } });
+
       toast.success(`Marked as ${status}`);
+
+      // Remove the outing from list
       setOutings((prev) => prev.filter((o) => o._id !== _id));
     } catch {
       toast.error("Failed to update status");
@@ -68,6 +63,7 @@ export default function PendingPage() {
       title="Pending Outings"
       subtitle="Review and take action on pending outing requests"
     >
+      {/* Loading Skeleton */}
       {isLoading && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -85,6 +81,7 @@ export default function PendingPage() {
         </div>
       )}
 
+      {/* No Pending Outings */}
       {!isLoading && outings.length === 0 && (
         <Card>
           <CardContent className="flex items-center gap-3 py-6">
@@ -99,6 +96,7 @@ export default function PendingPage() {
         </Card>
       )}
 
+      {/* Pending List */}
       {!isLoading && outings.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {outings.map((outing) => (
@@ -112,19 +110,24 @@ export default function PendingPage() {
                     {outing.rollNo}
                   </p>
                 </div>
+
                 <span className="inline-flex items-center gap-1 rounded-full bg-yellow-500/10 px-2 py-1 text-[11px] font-medium text-yellow-600">
                   <Clock className="h-3 w-3" />
                   Pending
                 </span>
               </CardHeader>
+
               <CardContent className="space-y-2 text-sm">
                 <p>
                   <span className="font-medium">Purpose:</span>{" "}
                   {outing.purpose}
                 </p>
+
                 <p className="text-xs text-muted-foreground">
                   Requested: {new Date(outing.createdAt).toLocaleString()}
                 </p>
+
+                {/* Action Buttons */}
                 <div className="flex flex-wrap gap-2 pt-2">
                   <button
                     onClick={() => updateStatus(outing._id, "approved")}
@@ -136,6 +139,7 @@ export default function PendingPage() {
                     )}
                     Approve
                   </button>
+
                   <button
                     onClick={() => updateStatus(outing._id, "rejected")}
                     disabled={actionId === outing._id}
