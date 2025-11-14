@@ -120,7 +120,7 @@ export const loginStudent = async (req, res) => {
 
     // Set cookie (7 days)
     res.cookie("token", jwtToken, {
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV == "production",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       sameSite: "strict",
