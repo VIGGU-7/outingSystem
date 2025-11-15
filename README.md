@@ -48,6 +48,7 @@ JWT_SECRET=REPLACE_WITH_SECURE_SECRET
 FRONTEND_URL=http://localhost:5173
 EMAIL_HOST=smtp.example.com
 EMAIL_PORT=587
+EMAIL_SECURE=false # true for 465, false for other ports
 EMAIL_USER=you@example.com
 EMAIL_PASS=your_email_password
 EMAIL_FROM="Outing System <no-reply@example.com>"
