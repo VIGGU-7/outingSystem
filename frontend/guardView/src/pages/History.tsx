@@ -18,7 +18,7 @@ interface Outing {
 
   approvedBy?: string | null;
   rejectedBy?: string | null;
-  completedBy?: string | null;
+  markedCompletedBy?: string | null;
 
   status: "Pending" | "Approved" | "Rejected" | "Completed";
 
@@ -76,11 +76,12 @@ export default function HistoryPage() {
             o.mobileNumber?.toLowerCase().includes(term) ||
             o.approvedBy?.toLowerCase().includes(term) ||
             o.rejectedBy?.toLowerCase().includes(term) ||
-            o.completedBy?.toLowerCase().includes(term)
+            o.markedCompletedBy?.toLowerCase().includes(term)
           )
         )
           return false;
       }
+      console.log(o)
 
       if (fromDate && new Date(o.createdAt) < new Date(fromDate)) return false;
       if (toDate && new Date(o.createdAt) > new Date(toDate)) return false;
@@ -124,7 +125,7 @@ export default function HistoryPage() {
         : o.status === "Rejected"
         ? o.rejectedBy || "-"
         : o.status === "Completed"
-        ? o.completedBy || "-"
+        ? o.markedCompletedBy || "-"
         : "-",
 
       o.status,
@@ -263,7 +264,7 @@ export default function HistoryPage() {
                         : o.status === "Rejected"
                         ? o.rejectedBy || "-"
                         : o.status === "Completed"
-                        ? o.completedBy || "-"
+                        ? o.markedCompletedBy || "-"
                         : "-"}
                     </td>
 
