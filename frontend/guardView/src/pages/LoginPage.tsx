@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { apiInstance } from '@/lib/apiInstance'
 import { useAuthStore } from '@/store/authStore'
 import { useNavigate } from 'react-router-dom'
-
+import { toast } from 'sonner'
 function LoginPage() {
     const navigate=useNavigate()
     const {setIsLoading,setUserData}=useAuthStore()
@@ -54,7 +54,7 @@ function LoginPage() {
         setUserData(response.data.user)
         navigate('/')
     } catch (error: any) {
-       setError(error?.response?.data?.message || "Login failed. Please try again.")
+      toast.error(error?.response?.data?.message)
     }finally{
         setIsLoading(false)
     }
