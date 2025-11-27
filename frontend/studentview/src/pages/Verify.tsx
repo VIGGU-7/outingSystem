@@ -1,6 +1,6 @@
-import { useEffect, useState} from "react";
-import type  {FormEvent } from "react"
-import { useLocation } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import type { FormEvent } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { apiInstance } from "../utils";
 import toast from "react-hot-toast";
 
@@ -10,17 +10,34 @@ export default function Verify() {
   const [email, setEmail] = useState("");
   const [resending, setResending] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // prevent duplicate calls in StrictMode / double renders
+  const executedRef = useRef(false);
 
   const queryParams = new URLSearchParams(location.search);
   const token = queryParams.get("token");
 
   useEffect(() => {
     async function verifyToken() {
+      if (!token) {
+        setLoading(false);
+        setError(true);
+        toast.error("No verification token provided");
+        return;
+      }
+
+      // avoid duplicate calls (React 18 StrictMode may mount twice in dev)
+      if (executedRef.current) return;
+      executedRef.current = true;
+
       try {
-        if (!token) throw new Error("No verification token provided");
-        await apiInstance.get(`/verify/${token}`);
+        const encoded = encodeURIComponent(token.trim());
+        await apiInstance.get(`/verify/${encoded}`);
         toast.success("Email verified successfully!");
         setError(false);
+        // short delay then redirect to login
+        setTimeout(() => navigate("/login"), 1100);
       } catch (err: unknown) {
         const msg =
           (err as any)?.response?.data?.message || "Verification failed";
@@ -32,17 +49,17 @@ export default function Verify() {
     }
 
     verifyToken();
-  }, [token]);
+  }, [token, navigate]);
 
   async function handleResend(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // ✅ Corrected condition: should allow both cse and ece domains only
+    const cleaned = email.trim().toLowerCase();
     if (
       !(
-        email.endsWith("@cse.iiitp.ac.in") ||
-        email.endsWith("@ece.iiitp.ac.in") ||
-        email.endsWith("@iiitp.ac.in")
+        cleaned.endsWith("@cse.iiitp.ac.in") ||
+        cleaned.endsWith("@ece.iiitp.ac.in") ||
+        cleaned.endsWith("@iiitp.ac.in")
       )
     ) {
       return toast.error("Please enter a valid IIITP email address");
@@ -50,7 +67,7 @@ export default function Verify() {
 
     try {
       setResending(true);
-      await apiInstance.post("/resend-verify", { email });
+      await apiInstance.post("/resend-verify", { email: cleaned });
       toast.success("Verification email sent again!");
     } catch (err: unknown) {
       const msg =
@@ -116,7 +133,9 @@ export default function Verify() {
       <h1 className="text-2xl font-semibold text-green-700">
         Email Verified Successfully!
       </h1>
-      <p className="mt-2 text-gray-600">You can now log in to your account.</p>
+      <p className="mt-2 text-gray-600">
+        You will be redirected to login shortly.
+      </p>
     </div>
   );
 }
