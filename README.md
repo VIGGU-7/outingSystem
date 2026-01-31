@@ -11,9 +11,9 @@ Badges
 ---
 
 ## Quick links
-- Student frontend: frontend/studentview
-- Guard frontend: frontend/guardView
-- Backend: backend
+- Student frontend: [studentView](https://studentview.outing.viggu.in)
+- Guard frontend: [guardView](https://guardview.outing.viggu.in)
+
 
 ---
 
